@@ -1,6 +1,5 @@
 name: CI/CD Pipeline for Spring Boot
 
-# 1. Yeh pipeline kab chalegi? Jab bhi main branch par code PUSH hoga!
 on:
   push:
     branches: [ main, master ]
@@ -10,28 +9,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step A: GitHub Actions par aapka naya code download karna
-      - name: Checkout Code
-        uses: actions/checkout@v4
+    - name: Checkout Code
+      uses: actions/checkout@v4
 
-      # Step B: Securely AWS Server se connect hona aur Docker chalana
-      - name: Deploy to AWS EC2 via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-           cd /home/ubuntu
-          # 1. Phanse hue purane java processes ko kill karein
-           sudo killall -9 java || true
-          
-          # 2. Database ko down karke fresh up karein
-           sudo docker compose down -v
-           sudo docker compose up -d
-          
-          # 3. Poore 20 seconds ka intezar karein taake MySQL free ho jaye
-           sleep 20
-          
-          # 4. (NEW) Application ko background mein hamesha ke liye start kar dein
-           nohup java -jar app.jar --spring.datasource.url=jdbc:mysql://localhost:3306/journal_db?createDatabaseIfNotExist=true --spring.datasource.username=root --spring.datasource.password=rootpassword > app.log 2>&1 &
+    - name: Deploy to AWS EC2 via SSH
+      uses: appleboy/ssh-action@v1.2.1
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          cd /home/ubuntu
+          sudo killall -9 java || true
+          sudo docker compose down -v
+          sudo docker compose up -d
+          sleep 20
+          nohup java -jar app.jar --spring.datasource.url=jdbc:mysql://localhost:3306/journal_db?createDatabaseIfNotExist=true --spring.datasource.username=root --spring.datasource.password=rootpassword > app.log 2>&1 &
