@@ -1,0 +1,28 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: journal-mysql-db
+    restart: always
+    environment:
+      # Ye wo database hai jo Docker khud banaye ga
+      MYSQL_DATABASE: journal_db
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  app:
+    build: .
+    container_name: journal-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/journal_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: rootpassword
+
+volumes:
+  mysql_data:
