@@ -1,0 +1,28 @@
+name: CI/CD Pipeline for Spring Boot
+
+# 1. Yeh pipeline kab chalegi? Jab bhi main branch par code PUSH hoga!
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step A: GitHub Actions par aapka naya code download karna
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step B: Securely AWS Server se connect hona aur Docker chalana
+      - name: Deploy to AWS EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /home/ubuntu
+            # AWS server khud hi Docker Compose ko batayega ke naye code ke mutabiq reset ho jaye
+            sudo docker compose down
+            sudo docker compose up -d
